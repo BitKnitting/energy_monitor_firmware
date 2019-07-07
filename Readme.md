@@ -1,4 +1,4 @@
-# Energy Monitor Wifi
+# Energy Monitor Firmware
 The purpose of this project is to build the micropython code used by the energy monitor to:  
 * Join the homeowner's wifi.  
 * Send readings to the Firebase RT db.
@@ -21,3 +21,25 @@ The config file, [config.dat](workspace/config/config.dat), contains:
 * The __machine name__ of the energy monitor.  The machine name is made up of a common name and the date the machine was assigned to a FitHome member.  The machine name used for testing has the common name of 'bambi' and date of '07052019' = ```bambi-07052019```.  
 * The __Firebase RT Project ID__ found in the firebase console for the FitHome project:  
 ![project id page](imgs/project_id_page.png)
+## Rest API
+The energy monitor uses the Firebase REST APIs to send readings to the Firebase RT db.  An example curl command:  
+```
+curl -X POST -d '{"P":1127.9}' \
+  'https://<Firebase project name>.firebaseio.com/<machine name>/.json' 
+```
+### Curl to HTTP Post
+The firmware uses HTTP.  I found this great web page that [converts curl commands to Python  ](https://curl.trillworks.com/).  VERY HELPFUL.
+### Example post
+For example, this code would send the power value to the Firebaase RT db that is attached to the iot-test-1e426 project:  
+```
+    def send_reading(self, v1, v2, i1, i2, power):
+        do_connect(self.ssid, self.password)
+        # .sv timestamp: http://bit.ly/2MO0XNt
+        #data = '{'+'"P":{},".sv":"timestamp"'.format(power) +'}'
+        data = '{'+'"P":{}'.format(power) +',"timestamp": {".sv":"timestamp"}}'
+        path = 'https://iot-test-1e426.firebaseio.com/'+self.device_name+'/'+self.userID+'/.json'
+        print(path)
+        response = requests.post(path, data=data)
+        print('response: {}'.format(response.text))
+```
+The power reading is sent.  The "timestamp" is generated on the Firebase server then filled into the db entry.
