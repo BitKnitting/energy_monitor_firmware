@@ -9,7 +9,7 @@
 # *******************************************************************************
 # The wifi_connect library uses micropython's Access Point to get the SSID and
 # password of thewifi this esp32 connects to.  Once the ESP32/nmicropython has
-# connected to the wifi, it will know how to connect across reboots.  We use this 
+# connected to the wifi, it will know how to connect across reboots.  We use this
 # code within the FitHome experience.
 # Rather, we assume the esp32/micropython are able to connect after the first
 # self.wifi connection.

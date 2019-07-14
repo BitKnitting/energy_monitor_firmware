@@ -7,7 +7,7 @@
 #
 #  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # *******************************************************************************
-# The semd_reading library sends a power reading to the Firebase RT database.  It assumes
+# The send_reading library sends a power reading to the Firebase RT database.  It assumes
 # The wifi connecton has already been made.  It uses the Firebase REST API to post
 # the reading into the Firebase RT db.
 #
@@ -18,7 +18,6 @@
 # *******************************************************************************
 import network
 import urequests as requests
-from wifi_connect import is_connected
 
 from app_error import AppError
 from config import read_config
@@ -37,10 +36,12 @@ class SendReading:
 
     def send(self, power):
         # Assumes attached to wifi
-        if not is_connected():
+        wlan_sta = network.WLAN(network.STA_IF)
+        if not wlan_sta.isconnected:
             raise AppError('Should be connected to wifi.')
-        # .sv timestamp: http://bit.ly/2MO0XNt
-        #data = '{'+'"V1":{},"V2":{},"I1":{},"I2":{},"P":{},".sv":"timestamp"'.format(v1,v2,i1,i2,power) +'}'
+            return False
+        # # .sv timestamp: http://bit.ly/2MO0XNt
+        # #data = '{'+'"V1":{},"V2":{},"I1":{},"I2":{},"P":{},".sv":"timestamp"'.format(v1,v2,i1,i2,power) +'}'
         data = '{'+'"P":{}'.format(power) + \
             ',"timestamp": {".sv":"timestamp"}}'
         print(data)
