@@ -19,28 +19,21 @@
 import network
 import urequests as requests
 from wifi_connect import is_connected
-import ujson as json
-import uerrno
-from app_error import AppError
 
-CONFIG_FILE = 'lib/config.dat'
+from app_error import AppError
+from config import read_config
+
+CONFIG_FILE = 'lib/config.json'
 
 
 class SendReading:
     def __init__(self):
-        try:
-            with open(CONFIG_FILE) as f:
-                lines = f.readlines()
-                config_vars = json.loads(lines[0])
-                self.machine_name = config_vars['machine']
-                self.project_id = config_vars['project_id']
-        except OSError as error:
-            if error.args[0] == uerrno.ENOENT:
-                raise OSError(
-                    'An error occured trying to read {}'.format(CONFIG_FILE))
-        except IndexError as error:
-            raise IndexError(
-                'Could not read variables from {}'.format(CONFIG_FILE))
+        self.machine_name = read_config('machine')
+        if self.machine_name is None:
+            raise AppError('There is no machine name.')
+        self.project_id = read_config('project_id')
+        if self.project_id is None:
+            raise AppError('There is no Firebase project id.')
 
     def send(self, power):
         # Assumes attached to wifi

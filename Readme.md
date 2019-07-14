@@ -2,14 +2,24 @@
 The purpose of this project is to build the micropython code used by the energy monitor to:  
 * Join the homeowner's wifi.  
 * Send readings to the Firebase RT db.
+# Preparing the ESP32
+At least for testing, we are using [the ESP32 DevKit C](https://amzn.to/2JInYgj).  For the IDE we are using [uPyCraft](http://docs.dfrobot.com/upycraft/). 
+* Download the
+* Install and open uPyCraft.  
+* The ESP32 most likely does not have a build of micropython, or you need to update the build.  If a dialog box does not come up immediately, select  Tools->BurnFirmware.  [This is the micropython build we currently use.](micropython_build/esp32-20190529-v1.11.bin).  For ESP32 micropython firmware, the settings should be:
+![micropython burn firmware dialog](imgs/uPyCraft_burnimage_dialog.png)  
+* 
 # Join the Homeowner's Wifi
-Soon after the electrician installs the energy monitor, the home owner must tell the energy monitor the home wifi SSID and password. The technique to do this is starting the energy monitor's firmware as a Local Access Point.  The homeowner goes to their mac or pc and scrolls the available wifi networks.  Once the energy monitor is plugged in, the network __fithome_abc__ will be added. 
+Soon after the electrician installs and activates the energy monitor, the home owner must tell the energy monitor the home wifi SSID and password. The technique to do this is starting the energy monitor's firmware as a Local Access Point.  The homeowner goes to their mac or pc and scrolls the available wifi networks.  Once the energy monitor is plugged in, the network __fithome_abc__ will be added. 
 The home owner:    
 * goes to their mac or pc.  
 * opens the drop down list of wifi networks and chooses __fithome_abc__.
 * uses __fithome_abc__ for the password.
 * opens a browser and types in the address ```192.168.4.1```
 * A web page is shown where the user picks their wifi SSID and enters the password.  
+## micropython code
+The code file for connecting to the wifi is [wifi_connect.py](workspace/join_wifi/wifi_connect.py).
+
   
 After successful completion, the energy monitor is able to use the home's wifi.
   
