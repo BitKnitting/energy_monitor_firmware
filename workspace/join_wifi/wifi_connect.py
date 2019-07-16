@@ -53,7 +53,7 @@ class WifiAccess:
     # Connect if we can
     def get_connected(self):
         if self.wifi_state == self.wifi_states.connected:
-            pass
+            return True
         # have ssid and pwd, not connected.
         elif self.wifi_state == self.wifi_states.not_connected:
             wlan_sta.connect(self.ssid, self.password)
@@ -62,6 +62,7 @@ class WifiAccess:
             print('>>We are connected.')
             # we are in the connected state
             self.wifi_state = self.wifi_states.connected
+            return True
         # Become an Access Point
         else:
             print('>> We are becomming an Access Point')

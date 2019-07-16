@@ -48,6 +48,10 @@ class SendReading:
         path = 'https://' + self.project_id+'.firebaseio.com/' + \
             self.machine_name+'/'+'/.json'
         print(path)
-        response = requests.post(path, data=data)
+        try:
+            response = requests.post(path, data=data)
+        except IndexError as e:
+            print('error: {}.format(e)
+            return False
         print('response: {}'.format(response.text))
         return True
