@@ -24,7 +24,8 @@ CurrentGainCT1 = 25498  # 38695 - SCT-016 120A/40mA
 CurrentGainCT2 = 25498  # 25498 - SCT-013-000 100A/50mA
 # 46539 - Magnalab 100A w/ built in burden resistor
 # *******************************************/
-
+# Delay starting up to accomodate plugging in energy monitor after microcontroller.
+time.sleep(10)
 
 try:
     # Get reading and then send reading.
@@ -61,20 +62,12 @@ try:
                     if (sys0 == 0xFFFF or sys0 == 0):
                         raise OSError(SysStatusError().number,
                                       SysStatusError().explanation)
-                    iA = energy_sensor.line_voltageA
-                    vA = energy_sensor.line_currentA
-                    iC = energy_sensor.line_voltageC
-                    vC = energy_sensor.line_currentC
-                    pA = iA*vA
-                    pC = iC*vC
-                    print('vA: {} vC: {} iA: {} iC:{}'.format(vA,vC,iA,iC)
-                    print('power A: {}, Power C: {}'.format(pA, pC))
-                    # print('power: {}'.format(
+                    power_reading = energy_sensor.active_power_A+energy_sensor.active_power_C
+                   # print('power A: {}, Power C: {}'.format(pA, pC))
+                    ## print('power: {}'.format(
                     #     energy_sensor.line_voltageA*energy_sensor.line_currentA))
-                    print('everything works. ')
-                    print('Active Power: {}'.format(
-                        energy_sensor.active_power))
-                    power_reading = pA+pC
+
+                    #power_reading = energy_sensor.active_power
                     s.send(power_reading)
                     blink(led_green, 1)
                     time.sleep(15)
@@ -100,4 +93,5 @@ except OSError as err:
         blink(led_red, SysStatusError().blinks)
     print('Error number: {}'.format(err.args[0]))
     print('Explanation: {}'.format(err.args[1]))
+
 

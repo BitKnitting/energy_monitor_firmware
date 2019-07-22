@@ -62,12 +62,14 @@ There is _so much_ prior work that made it easier to write a CP library for the 
 * Tisham Dhar's [atm90e26 Arduino library](https://github.com/whatnick/ATM90E26_Arduino).   Tisham deserves a HUGE THANK YOU for his open source atm90e* hw and sw design. Tisham's excellent work and friendly help are inspirational.
 * The [atm90e26 Circuit Python library I wrote](https://github.com/BitKnitting/HappyDay_ATM90e26_CircuitPython)  
 * Circuit Setup's [atm90e32 Arduino library](https://github.com/CircuitSetup/Split-Single-Phase-Energy-Meter/tree/master/Software/libraries/ATM90E32)
-## Wiring SPI
-### ESP32 DevKitC
+
+## ESP32 DevKitC
 Here is an image of the pinout:  
-![esp32 devkitc pinout](https://components101.com/sites/default/files/component_pin/ESP32-Pinout.png)  
-With this board I wired HSPI. [From the micropython forum](https://forum.micropython.org/viewtopic.php?t=3386), Native SPI pins are (clk, mosi, miso, cs): 
-  
+![esp32 devkitc pinout](https://i1.wp.com/randomnerdtutorials.com/wp-content/uploads/2018/08/ESP32-DOIT-DEVKIT-V1-Board-Pinout-36-GPIOs-updated.jpg?ssl=1)    
+This image is better than most because it points out what GPIO pins to stay away from when setting up a GPIO pin for output, as we do for the LEDs.
+
+### Wiring SPI
+With this board I wired HSPI. [From the micropython forum](https://forum.micropython.org/viewtopic.php?t=3386), Native SPI pins are (clk, mosi, miso, cs):   
 SPI1: 6, 8, 7, 11  
 HSPI: 14,13,12,15  
 VSPI: 18,23,19, 5  
@@ -99,3 +101,7 @@ For VSPI:
 ```
 vspi = SPI(2, baudrate=200000, polarity=0, phase=0, bits=8, firstbit=0, sck=Pin(18), mosi=Pin(23), miso=Pin(19))
 ```
+### Wiring LEDs
+We decided on two LEDs, a red one for errors, and a green one to let us know the monitor is working.  According to the pinout above, the pins to stay away from are:  
+*  GPIO6-11  
+*  We need output pins, so don't use GPIO36,39,34,35 because they are input only.

@@ -15,6 +15,8 @@ FreqLoTh = 0x0C  # Low Threshold for Frequency Detection
 FreqHiTh = 0x0D  # High Threshold for Frequency Detection
 PMPwrCtrl = 0x0E  # Partial Measurement Mode Power Control
 IRQ0MergeCfg = 0x0F  # IRQ0 Merge Configuration
+ENStatus0 = 0x95  # Tells us if readings are above the threshold and being read
+
 
 #* EMM STATUS REGISTERS *#
 SoftReset = 0x70  # Software Reset

@@ -1,10 +1,9 @@
-from app_error import CalibrationError
 from machine import Pin, SPI
 import math
 import time
 import struct
 from atm90e32_registers import *
-
+from app_error import AppError
 
 SPI_WRITE = 0
 SPI_READ = 1
@@ -35,12 +34,15 @@ class ATM90e32:
 
         self.device = SPI(1, baudrate=200000, sck=sck_pin,
                           mosi=mosi_pin, miso=miso_pin, polarity=1, phase=1)
-        self.num_write_failed = 0
+        # We check if the calibration values aren't written to.  This can easily
+        # happen when the microcontroller is not connected propertly to the energy
+        # monitor.
+        self.num_write_fails = 0
         self._init_config()
-        if self.num_write_failed > 0:  # Can't write to registers..probably not connected.
-            print(self.num_write_failed)
-            raise OSError(CalibrationError().number,
-                          CalibrationError().explanation)
+        # if self.num_write_fails > 0:
+        #     raise AppError(
+        #         'Could not set calibration values.  Are we connected?')
+        #     return
 
     def _init_config(self):
         # CurrentGainCT2 = 25498  #25498 - SCT-013-000 100A/50mA
@@ -87,20 +89,13 @@ class ATM90e32:
         # PGA Gain Configuration for Current Channels - 0x002A (x4) # 0x0015 (x2) # 0x0000 (1x)
         self._spi_rw(SPI_WRITE, MMode1, self._pgagain)
         # Active Startup Power Threshold - 50% of startup current = 0.9/0.00032 = 2812.5
-        # self._spi_rw(SPI_WRITE, PStartTh, 0x0AFC)
-        # Testing a little lower setting...because readings aren't hapenng if power is off then
-        # turned on....
-        # Startup Power Threshold = .4/.00032 = 1250 = 0x04E2
-        # Just checking with 0.
-        self._spi_rw(SPI_WRITE, PStartTh, 0x0000)
+        self._spi_rw(SPI_WRITE, PStartTh, 0x0AFC)
         # Reactive Startup Power Threshold
-        #  self._spi_rw(SPI_WRITE, QStartTh, 0x0AEC)
-        self._spi_rw(SPI_WRITE, QStartTh, 0x0000)
+        self._spi_rw(SPI_WRITE, QStartTh, 0x0AEC)
         # Apparent Startup Power Threshold
         self._spi_rw(SPI_WRITE, SStartTh, 0x0000)
         # Active Phase Threshold = 10% of startup current = 0.06/0.00032 = 187.5
-        # self._spi_rw(SPI_WRITE, PPhaseTh, 0x00BC)
-        self._spi_rw(SPI_WRITE, PPhaseTh, 0x0000)
+        self._spi_rw(SPI_WRITE, PPhaseTh, 0x00BC)
         self._spi_rw(SPI_WRITE, QPhaseTh, 0x0000)    # Reactive Phase Threshold
         # Apparent  Phase Threshold
         self._spi_rw(SPI_WRITE, SPhaseTh, 0x0000)
@@ -180,12 +175,6 @@ class ATM90e32:
     def meter_status0(self):
         reading = self._spi_rw(SPI_READ, EMMState0, 0xFFFF)
         return reading
-
-    #####################################################################################
-    @property
-    def en_status0(self):
-        reading = self._spi_rw(SPI_READ, ENStatus0, 0xFFFF)
-        return reading
     #####################################################################################
     @property
     def meter_status1(self):
@@ -223,20 +212,8 @@ class ATM90e32:
         return reading / 100.0
     #####################################################################################
     @property
-    def total_active_power(self):
+    def active_power(self):
         reading = self._read32Register(PmeanT, PmeanTLSB)
-        return reading * 0.00032
-    #####################################################################################
-
-    @property
-    def active_power_A(self):
-        reading = self._read32Register(PmeanA, PmeanALSB)
-        return reading * 0.00032
-        #####################################################################################
-
-    @property
-    def active_power_C(self):
-        reading = self._read32Register(PmeanC, PmeanCLSB)
         return reading * 0.00032
     #####################################################################################
     # do the SPI read or write request.
@@ -250,19 +227,14 @@ class ATM90e32:
 
         else:
             for i in range(3):  # for robustness try a few times.
+                # _writeSPI will validate the address was written to by reading
+                # LastSPIData.  This is the method recommended in the app note.
                 bWriteSuccess = self._writeSPI(address, val)
-                if (bWriteSuccess or address == SoftReset):
-                    # time.sleep_us(3000)
-                    # start = time.ticks_us()
-                    # print(
-                    #     'reading = value. Write successful.  It took {} tries.'.format(i))
-                    # print('us ticks: {}'.format(
-                    #     time.ticks_diff(time.ticks_us(), start)))
+                if (bWriteSuccess):
                     return True
-            # Write to register didn't work.
-            self.num_write_failed += 1
-            # print(
-            #     'Calibration write to address {:#04x} not successful.'.format(address))
+            print(
+                self.num_write_fails += 1
+                'Calibration write to address {:#04x} not successful.'.format(address))
             return False
     ###################################################################################
 
@@ -293,6 +265,8 @@ class ATM90e32:
         self.device.write(four_byte_buf)
         self.cs.on()
         time.sleep_us(4)
+        if address == SoftReset:  # Soft reset is a write action...not a calibration setting.
+            return True
         reading = self._spi_rw(SPI_READ, LastSPIData, 0xFFFF)
         if (reading == val):
             return True

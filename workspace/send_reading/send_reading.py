@@ -19,7 +19,7 @@
 import network
 import urequests as requests
 
-from app_error import AppError
+from app_error import NoWiFiError, NoMachineNameError, NoDBidError
 from config import read_config
 
 CONFIG_FILE = 'lib/config.json'
@@ -29,17 +29,18 @@ class SendReading:
     def __init__(self):
         self.machine_name = read_config('machine')
         if self.machine_name is None:
-            raise AppError('There is no machine name.')
+            raise OSError(NoMachineNameError().number,
+                          NoMachineNameError().explanation)
         self.project_id = read_config('project_id')
         if self.project_id is None:
-            raise AppError('There is no Firebase project id.')
+            raise OSError(NoDBidError().number, NoDBidError().explanation)
 
     def send(self, power):
         # Assumes attached to wifi
         wlan_sta = network.WLAN(network.STA_IF)
         if not wlan_sta.isconnected:
-            raise AppError('Should be connected to wifi.')
-            return False
+            raise OSError(NoWiFiError().number,
+                          NoWiFiError().explanation)
         # # .sv timestamp: http://bit.ly/2MO0XNt
         # #data = '{'+'"V1":{},"V2":{},"I1":{},"I2":{},"P":{},".sv":"timestamp"'.format(v1,v2,i1,i2,power) +'}'
         data = '{'+'"P":{}'.format(power) + \
@@ -51,7 +52,7 @@ class SendReading:
         try:
             response = requests.post(path, data=data)
         except IndexError as e:
-            print('error: {}.format(e)
+            print('error: {}'.format(e))
             return False
         print('response: {}'.format(response.text))
         return True
