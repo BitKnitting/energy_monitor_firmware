@@ -14,7 +14,7 @@ The libraries used by main.py include:
 * [atm90e32_u.py](workspace/read_monitor/atm90e32_u.py)  
 * [config.py](workspace/config/config.py)
 * [wifi_connect.py](workspace/join_wifi/wifi_connect.py)
-* [send_reading.py](workspace/send_reading/send_reading.py)
+* [send_reading.py](workspace/send_reading/send_reading.py)  
 We did not compress these.  However, we have included a version of [mpy-cross](utils/mpy-cross).  
 ### Copy to microcontroller
 From uPyCraft, create a lib folder on the device.  Then copy the above files into the lib folder.
