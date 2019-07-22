@@ -4,11 +4,37 @@ The purpose of this project is to build the micropython code used by the energy 
 * Send readings to the Firebase RT db.
 # Preparing the ESP32
 At least for testing, we are using [the ESP32 DevKit C](https://amzn.to/2JInYgj).  For the IDE we are using [uPyCraft](http://docs.dfrobot.com/upycraft/). 
-* Download the
 * Install and open uPyCraft.  
+## Install micropython
 * The ESP32 most likely does not have a build of micropython, or you need to update the build.  If a dialog box does not come up immediately, select  Tools->BurnFirmware.  [This is the micropython build we currently use.](micropython_build/esp32-20190529-v1.11.bin).  For ESP32 micropython firmware, the settings should be:
 ![micropython burn firmware dialog](imgs/uPyCraft_burnimage_dialog.png)  
-* 
+## Libraries
+The libraries used by main.py include:  
+* [atm90e32_registers.py](workspace/read_monitor/atm90e32_registers.py)  
+* [atm90e32_u.py](workspace/read_monitor/atm90e32_u.py)  
+* [config.py](workspace/config/config.py)
+* [wifi_connect.py](workspace/join_wifi/wifi_connect.py)
+* [send_reading.py](workspace/send_reading/send_reading.py)
+We did not compress these.  However, we have included a version of [mpy-cross](utils/mpy-cross).  
+### Copy to microcontroller
+From uPyCraft, create a lib folder on the device.  Then copy the above files into the lib folder.
+#### config.json
+A file that must exist in the lib folder but is not included in GitHub is the ```config.json``` file.  
+
+```config.json``` contains:  
+* The __machine name__ of the energy monitor.  The machine name is made up of a common name and the date the machine was assigned to a FitHome member.  The machine name used for testing has the common name of 'bambi' and date of '07052019' = ```bambi-07052019```.  
+* The __Firebase RT Project ID__ found in the firebase console for the FitHome project:  
+![project id page](imgs/project_id_page.png)  
+  
+For example, 
+```
+{
+    "machine":"bambi-07052019",
+    "project_id":"my-firebase-projectid-00989"
+}  
+```
+This config.json file has the machine as ```bambi-07052019``` and the firebase project id as ```my-firebase-projectid-00989```.  
+
 # Join the Homeowner's Wifi
 Soon after the electrician installs and activates the energy monitor, the home owner must tell the energy monitor the home wifi SSID and password. The technique to do this is starting the energy monitor's firmware as a Local Access Point.  The homeowner goes to their mac or pc and scrolls the available wifi networks.  Once the energy monitor is plugged in, the network __fithome_abc__ will be added. 
 The home owner:    
@@ -26,10 +52,7 @@ __NOTE: The energy monitor will not be able to proceed unless there is a constan
 # Sending Readings to Firebase RT db
 Before sending readings, [send_reading.py](workspace/send_reading/send_reading.py) needs configuration info stored in the config.dat file.
 ## Config File
-The config file, [config.dat](workspace/config/config.dat), contains:  
-* The __machine name__ of the energy monitor.  The machine name is made up of a common name and the date the machine was assigned to a FitHome member.  The machine name used for testing has the common name of 'bambi' and date of '07052019' = ```bambi-07052019```.  
-* The __Firebase RT Project ID__ found in the firebase console for the FitHome project:  
-![project id page](imgs/project_id_page.png)
+
 ## Rest API
 The energy monitor uses the Firebase REST APIs to send readings to the Firebase RT db.  An example curl command:  
 ```
