@@ -1,5 +1,5 @@
 
-from app_error import CalibrationError, SysStatusError, NoMachineNameError, NoWiFiError, NoDBidError, blink
+from app_error import CalibrationError, SysStatusError, NoMonitorNameError, NoWiFiError, NoDBidError, blink
 from wifi_connect import WifiAccess
 from send_reading import SendReading
 
@@ -49,11 +49,11 @@ try:
     join_wifi = WifiAccess()
     if join_wifi.get_connected():
         try:
-            # Send reading needs the machine id and db project id.
+            # Send reading needs the monitor id and db project id.
             # An exception will occur if we can't find either in the config file.
             s = SendReading()
-            print('machine name: {}.....project ID: {}'.format(
-                s.machine_name, s.project_id))
+            print('monitor name: {}.....project ID: {}'.format(
+                s.monitor_name, s.project_id))
             while True:
                 try:
                     # Check that monitor is working
@@ -86,8 +86,8 @@ try:
                         blink(led_red, SysStatusError().blinks)
                         break
         except OSError as err:
-            if NoMachineNameError().number == err.args[0]:
-                blink(led_red, NoMachineNameError().blinks)
+            if NoMonitorameError().number == err.args[0]:
+                blink(led_red, NoMonitorNameError().blinks)
             elif NoDBidError().number == err.args[0]:
                 blink(led_red, NoDBidError().blinks)
 

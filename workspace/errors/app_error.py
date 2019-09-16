@@ -30,11 +30,11 @@ class NoWiFiError():
     blinks = 3
 
 
-class NoMachineNameError():
-    # The machine name should be in config.json - but we didn't find it
+class NoMonitorNameError():
+    # The monitor name should be in config.json - but we didn't find it
     # there.  It is needed to write readings.
     number = 304
-    explanation = "Can't retrieve machine name."
+    explanation = "Can't retrieve monitor name."
     blinks = 4
 
 

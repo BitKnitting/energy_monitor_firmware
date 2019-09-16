@@ -2,13 +2,21 @@
 The purpose of this project is to build the micropython code used by the energy monitor to:  
 * Join the homeowner's wifi.  
 * Send readings to the Firebase RT db.
+
+To complete the steps, [clone the energy monitor GitHub repository](https://github.com/BitKnitting/energy_monitor_firmware)
+
 # Preparing the ESP32
-At least for testing, we are using [the ESP32 DevKit C](https://amzn.to/2JInYgj).  For the IDE we are using [uPyCraft](http://docs.dfrobot.com/upycraft/). 
-* Install and open uPyCraft.  
+At least for testing, we are using [the ESP32 DevKit C](https://amzn.to/2JInYgj).  For the IDE we are using [uPyCraft](http://docs.dfrobot.com/upycraft/).   
 ## Install micropython
-* The ESP32 most likely does not have a build of micropython, or you need to update the build.  If a dialog box does not come up immediately, select  Tools->BurnFirmware.  [This is the micropython build we currently use.](micropython_build/esp32-20190529-v1.11.bin).  For ESP32 micropython firmware, the settings should be:
+- Plug the microprocessor into the Mac's USB port.
+- Open uPyCraft on the Mac.
+- Check Tools/Build from the menu and make sure ESP32 is checked.
+- Check Tools/Serial from the menu and select the SLAB_USBtoUART serial port.  When this is done, the >>> repl command prompt should be seen in the lower window.  
+- Go to Tools/BurnFirmware.    [This is the micropython build we currently use.](micropython_build/esp32-20190529-v1.11.bin).  This version of micropython is available within [the energy monitor firmware's GitHub repository](https://github.com/BitKnitting/energy_monitor_firmware/tree/master/micropython_build).  For ESP32 micropython firmware, the settings should be:  
 ![micropython burn firmware dialog](imgs/uPyCraft_burnimage_dialog.png)  
-## Libraries
+Once the fields are filled in, click on OK.  This starts the erase and burn process.   
+- uPyCraft disconnects.  Once the microprocessor restarts, go ack to Tools/Select and choose the SLAB_USBtoUSART serial port. 
+## Install Libraries
 The libraries used by main.py include:  
 * [atm90e32_registers.py](workspace/read_monitor/atm90e32_registers.py)  
 * [atm90e32_u.py](workspace/read_monitor/atm90e32_u.py)  
@@ -17,23 +25,35 @@ The libraries used by main.py include:
 * [send_reading.py](workspace/send_reading/send_reading.py)  
 We did not compress these.  However, we have included a version of [mpy-cross](utils/mpy-cross).  
 ### Copy to microcontroller
-From uPyCraft, create a lib folder on the device.  Then copy the above files into the lib folder.
-#### config.json
+To copy the files to the microcontroller using uPyCraft, we must first configure where our workspace is located. 
+- Choose Tools/InitConfig  You'll be asked if you want to init. Choose yes.  
+- Click on the workspace folder.  This brings up a Finder dialog box.  Choose the energy_monitor_firmware directory that is a directory within the energy_monitor_firmware project. - Click on the device folder.  Create a lib folder within the device directory.  Then copy the above files into the lib folder.
+- Copy to the device/lib folder:
+  - atm90e32_registers.py and atm90e32_u.py from workSpace/read_monitor.
+  - config.py from workSpace/config.
+  - wifi_connect.py from workSpace/join_wifi.
+  - send_reading from workSpace/send_reading.
+_Note: If the file is not found in the workspace, try  File/Reflush Directory)_.
+
+## Install the Main program  
+- Copy WorkSpace/main.py to the device folder.  
+
+## config.json
 A file that must exist in the lib folder but is not included in GitHub is the ```config.json``` file.  
 
 ```config.json``` contains:  
-* The __machine name__ of the energy monitor.  The machine name is made up of a common name and the date the machine was assigned to a FitHome member.  The machine name used for testing has the common name of 'bambi' and date of '07052019' = ```bambi-07052019```.  
+* The __mamonitorchine name__ of the energy monitor.  The monitor name is made up of a common name and the date the monitor was assigned to a FitHome member.  The monitor name used for testing has the common name of 'bambi' and date of '07052019' = ```bambi-07052019```.  
 * The __Firebase RT Project ID__ found in the firebase console for the FitHome project:  
 ![project id page](imgs/project_id_page.png)  
   
 For example, 
 ```
 {
-    "machine":"bambi-07052019",
+    "monitor":"bambi-07052019",
     "project_id":"my-firebase-projectid-00989"
 }  
 ```
-This config.json file has the machine as ```bambi-07052019``` and the firebase project id as ```my-firebase-projectid-00989```.  
+This config.json file has the monitor as ```bambi-07052019``` and the firebase project id as ```my-firebase-projectid-00989```.  
 
 # Join the Homeowner's Wifi
 Soon after the electrician installs and activates the energy monitor, the home owner must tell the energy monitor the home wifi SSID and password. The technique to do this is starting the energy monitor's firmware as a Local Access Point.  The homeowner goes to their mac or pc and scrolls the available wifi networks.  Once the energy monitor is plugged in, the network __fithome_abc__ will be added. 
@@ -57,7 +77,7 @@ Before sending readings, [send_reading.py](workspace/send_reading/send_reading.p
 The energy monitor uses the Firebase REST APIs to send readings to the Firebase RT db.  An example curl command:  
 ```
 curl -X POST -d '{"P":1127.9}' \
-  'https://<Firebase project name>.firebaseio.com/<machine name>/.json' 
+  'https://<Firebase project name>.firebaseio.com/<monitor name>/.json' 
 ```
 ### Curl to HTTP Post
 The firmware uses HTTP.  I found this great web page that [converts curl commands to Python  ](https://curl.trillworks.com/).  VERY HELPFUL.
@@ -106,7 +126,7 @@ Looking at [the micropython esp32 docs for SPI](https://docs.micropython.org/en/
 The image notes that GPIO 15 is HW CS.  
 For HSPI:  
 ```
-from machine import Pin, SPI 
+from monitor import Pin, SPI 
 hspi = SPI(1, 200000, sck=Pin(14), mosi=Pin(13), miso=Pin(12))  
 ```
 #### VSPI

@@ -12,14 +12,14 @@
 # the reading into the Firebase RT db.
 #
 # Required to know before using:
-# The energy monitor's machine name.  This is given to the machine
+# The energy monitor's name.  
 #
 #
 # *******************************************************************************
 import network
 import urequests as requests
 
-from app_error import NoWiFiError, NoMachineNameError, NoDBidError
+from app_error import NoWiFiError, NoMonitorNameError, NoDBidError
 from config import read_config
 
 CONFIG_FILE = 'lib/config.json'
@@ -27,10 +27,10 @@ CONFIG_FILE = 'lib/config.json'
 
 class SendReading:
     def __init__(self):
-        self.machine_name = read_config('machine')
-        if self.machine_name is None:
-            raise OSError(NoMachineNameError().number,
-                          NoMachineNameError().explanation)
+        self.monitor_name = read_config('monitor')
+        if self.monitor_name is None:
+            raise OSError(NoMonitorNameError().number,
+                          NoMonitorNameError().explanation)
         self.project_id = read_config('project_id')
         if self.project_id is None:
             raise OSError(NoDBidError().number, NoDBidError().explanation)
@@ -47,7 +47,7 @@ class SendReading:
             ',"timestamp": {".sv":"timestamp"}}'
         print(data)
         path = 'https://' + self.project_id+'.firebaseio.com/' + \
-            self.machine_name+'/'+'/.json'
+            self.monitor_name+'/'+'/.json'
         print(path)
         try:
             response = requests.post(path, data=data)
