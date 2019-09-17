@@ -29,10 +29,11 @@ CurrentGainCT2 = 25498  # 25498 - SCT-013-000 100A/50mA
 blink(led_green, 4)
 # Load up an instance of wifi.
 join_wifi = WifiAccess()
-while (!join_wifi.get_connected()) {
-    time.sleep(1)
-    blink(led_green, 1)
-}
+if (not join_wifi.get_connected()) :
+    # Keep blinking...we cabn't do anything.
+    blink(led_red, SysStatusError().blinks)
+
+
 
 # *******************************************/
 # Delay starting up to accomodate plugging in energy monitor after microcontroller.
@@ -101,3 +102,4 @@ except OSError as err:
         blink(led_red, SysStatusError().blinks)
     print('Error number: {}'.format(err.args[0]))
     print('Explanation: {}'.format(err.args[1]))
+
