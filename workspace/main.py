@@ -1,5 +1,5 @@
 
-from app_error import CalibrationError, SysStatusError, NoMonitorNameError, NoWiFiError, NoDBidError, blink
+from app_error import NoMonitor, SysStatusError, NoMonitorNameError, NoWiFiError, NoDBidError, blink
 from wifi_connect import WifiAccess
 from send_reading import SendReading
 
@@ -29,10 +29,9 @@ CurrentGainCT2 = 25498  # 25498 - SCT-013-000 100A/50mA
 blink(led_green, 4)
 # Load up an instance of wifi.
 join_wifi = WifiAccess()
-if (not join_wifi.get_connected()) :
+if (not join_wifi.get_connected()):
     # Keep blinking...we cabn't do anything.
     blink(led_red, SysStatusError().blinks)
-
 
 
 # *******************************************/
@@ -96,10 +95,9 @@ try:
 except OSError as err:
   # A calibration error means the microcontroller could not write over SPI...most likely the connection to the atm90e32 isn't right.
   # It could mean the monitor is not turned on or the SPI connections aren't right...
-    if CalibrationError().number == err.args[0]:
-        blink(led_red, CalibrationError().blinks)
+    if NoMonitor().number == err.args[0]:
+        blink(led_red, NoMonitor().blinks)
     elif SysStatusError().number == err.args[0]:
         blink(led_red, SysStatusError().blinks)
     print('Error number: {}'.format(err.args[0]))
     print('Explanation: {}'.format(err.args[1]))
-

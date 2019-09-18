@@ -1,4 +1,4 @@
-from app_error import CalibrationError
+from app_error import NoMonitor
 from machine import Pin, SPI
 import math
 import time
@@ -39,8 +39,8 @@ class ATM90e32:
         self._init_config()
         if self.num_write_failed > 0:  # Can't write to registers..probably not connected.
             print(self.num_write_failed)
-            raise OSError(CalibrationError().number,
-                          CalibrationError().explanation)
+            raise OSError(NoMonitor().number,
+                          NoMonitor().explanation)
 
     def _init_config(self):
         # CurrentGainCT2 = 25498  #25498 - SCT-013-000 100A/50mA

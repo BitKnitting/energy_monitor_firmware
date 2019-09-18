@@ -1,13 +1,13 @@
 import time
 
 
-class CalibrationError():
+class NoMonitor():
     # When the atm class is initialized, it writes calibration info to
     # registers.  This error means the microcontroller couldn't write to
     # the atm.  Most likely the monitor isn't plugged in or the SPI
     # connection isn't working properly.
     number = 301
-    explanation = 'Calibration error.'
+    explanation = 'Could not contact a monitor.'
     blinks = 1
 
 

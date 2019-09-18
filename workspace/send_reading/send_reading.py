@@ -12,7 +12,7 @@
 # the reading into the Firebase RT db.
 #
 # Required to know before using:
-# The energy monitor's name.  
+# The energy monitor's name.
 #
 #
 # *******************************************************************************
@@ -27,6 +27,13 @@ CONFIG_FILE = 'lib/config.json'
 
 class SendReading:
     def __init__(self):
+        # print('in SendReading init')
+        # # Get the current time from Firebase
+        path = 'https://fithome-9ebbd.firebaseio.com/current_timestamp/.json'
+        data = '{ "timestamp":{".sv": "timestamp"} }'
+        response = requests.put(path, data=data)
+        print(response.text)
+        print(response.json())
         self.monitor_name = read_config('monitor')
         if self.monitor_name is None:
             raise OSError(NoMonitorNameError().number,
@@ -43,6 +50,12 @@ class SendReading:
                           NoWiFiError().explanation)
         # # .sv timestamp: http://bit.ly/2MO0XNt
         # #data = '{'+'"V1":{},"V2":{},"I1":{},"I2":{},"P":{},".sv":"timestamp"'.format(v1,v2,i1,i2,power) +'}'
+            # Get the current time from Firebase
+        # path = 'https://fithome-9ebbd.firebaseio.com/timestamp'
+        # data = '{ "timestamp":{".sv": "timestamp"} }'
+        # response = requests.put(path, data=data)
+        # print(response.text)
+        # print(response.json())
         data = '{'+'"P":{}'.format(power) + \
             ',"timestamp": {".sv":"timestamp"}}'
         print(data)
@@ -50,7 +63,7 @@ class SendReading:
             self.monitor_name+'/'+'/.json'
         print(path)
         try:
-            response = requests.post(path, data=data)
+            response = requests.put(path, data=data)
         except IndexError as e:
             print('error: {}'.format(e))
             return False

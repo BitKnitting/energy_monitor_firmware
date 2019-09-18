@@ -1,5 +1,5 @@
 
-from app_error import CalibrationError, SysStatusError, NoMonitorNameError, NoWiFiError, NoDBidError, blink
+from app_error import NoMonitor, SysStatusError, NoMonitorNameError, NoWiFiError, NoDBidError, blink
 from wifi_connect import WifiAccess
 from send_reading import SendReading
 
@@ -67,14 +67,14 @@ try:
                     vC = energy_sensor.line_currentC
                     pA = iA*vA
                     pC = iC*vC
-                    print('vA: {} vC: {} iA: {} iC:{}'.format(vA,vC,iA,iC)
+                    print('vA: {} vC: {} iA: {} iC:{}'.format(vA, vC, iA, iC)
                     print('power A: {}, Power C: {}'.format(pA, pC))
                     # print('power: {}'.format(
                     #     energy_sensor.line_voltageA*energy_sensor.line_currentA))
                     print('everything works. ')
                     print('Active Power: {}'.format(
                         energy_sensor.active_power))
-                    power_reading = pA+pC
+                    power_reading=pA+pC
                     s.send(power_reading)
                     blink(led_green, 1)
                     time.sleep(15)
@@ -94,10 +94,9 @@ try:
 except OSError as err:
   # A calibration error means the microcontroller could not write over SPI...most likely the connection to the atm90e32 isn't right.
   # It could mean the monitor is not turned on or the SPI connections aren't right...
-    if CalibrationError().number == err.args[0]:
-        blink(led_red, CalibrationError().blinks)
+    if NoMonitor().number == err.args[0]:
+        blink(led_red, NoMonitor().blinks)
     elif SysStatusError().number == err.args[0]:
         blink(led_red, SysStatusError().blinks)
     print('Error number: {}'.format(err.args[0]))
     print('Explanation: {}'.format(err.args[1]))
-

@@ -11,7 +11,8 @@ def read_config(key):
             config_vars = json.loads(lines[0])
             return config_vars[key]
         except (OSError, KeyError, IndexError) as error:
-            print('An error occured trying to read the key {}.'.format(key))
+            print('An error occured trying to read the key {} in {}.'.format(
+                key, CONFIG_FILE))
             return None
 
 
