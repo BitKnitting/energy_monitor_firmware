@@ -18,6 +18,8 @@
 # *******************************************************************************
 import network
 import urequests as requests
+import utime
+import machine
 
 from app_error import NoWiFiError, NoMonitorNameError, NoDBidError
 from config import read_config
@@ -29,11 +31,7 @@ class SendReading:
     def __init__(self):
         # print('in SendReading init')
         # # Get the current time from Firebase
-        path = 'https://fithome-9ebbd.firebaseio.com/current_timestamp/.json'
-        data = '{ "timestamp":{".sv": "timestamp"} }'
-        response = requests.put(path, data=data)
-        print(response.text)
-        print(response.json())
+        self._set_time()
         self.monitor_name = read_config('monitor')
         if self.monitor_name is None:
             raise OSError(NoMonitorNameError().number,
@@ -48,20 +46,10 @@ class SendReading:
         if not wlan_sta.isconnected:
             raise OSError(NoWiFiError().number,
                           NoWiFiError().explanation)
-        # # .sv timestamp: http://bit.ly/2MO0XNt
-        # #data = '{'+'"V1":{},"V2":{},"I1":{},"I2":{},"P":{},".sv":"timestamp"'.format(v1,v2,i1,i2,power) +'}'
-            # Get the current time from Firebase
-        # path = 'https://fithome-9ebbd.firebaseio.com/timestamp'
-        # data = '{ "timestamp":{".sv": "timestamp"} }'
-        # response = requests.put(path, data=data)
-        # print(response.text)
-        # print(response.json())
-        data = '{'+'"P":{}'.format(power) + \
-            ',"timestamp": {".sv":"timestamp"}}'
+
+        data = '{'+'"P":{}'.format(power) + '}'
         print(data)
-        path = 'https://' + self.project_id+'.firebaseio.com/' + \
-            self.monitor_name+'/'+'/.json'
-        print(path)
+        path = self._make_path()
         try:
             response = requests.put(path, data=data)
         except IndexError as e:
@@ -69,3 +57,29 @@ class SendReading:
             return False
         print('response: {}'.format(response.text))
         return True
+
+    def _set_time(self):
+        # Get the time from Firebase.
+        path = 'https://fithome-9ebbd.firebaseio.com/current_timestamp/.json'
+        data = '{ "timestamp":{".sv": "timestamp"} }'
+        r = requests.put(path, data=data)
+        timestamp_fb = r.json()['timestamp']
+        # Convert the timestamp to micropython 2000-01-01 (embedded) Epoch
+        # format and extract year, month....
+        ts = 1568821802745 // 1000
+        time_diff = 946684800
+        year, month, day, hour, minute,  second, dayofweek, dayofyear = utime.localtime(
+            ts-time_diff)
+        # Set micropython's date/time
+        rtc = machine.RTC()
+        rtc.datetime((year, month, day, dayofweek, hour, minute, second, 0))
+
+    def _make_path(self):
+        # Get the time and convert to Unix epoch.
+        now = utime.time()
+        time_diff = 946684800
+        now_unix = now + time_diff
+        # String ize
+        now_unix_str = str(now_unix)
+        return 'https://' + self.project_id+'.firebaseio.com/readings/' + \
+            self.monitor_name+'/'+now_unix_str+'/.json'
