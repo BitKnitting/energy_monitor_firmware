@@ -54,8 +54,6 @@ try:
     sys0 = energy_sensor.sys_status0
     if (sys0 == 0xFFFF or sys0 == 0):
         raise OSError(SysStatusError().number, SysStatusError().explanation)
-    energy_sensor.line_voltageA
-    energy_sensor.line_currentA
 
     try:
         # Send reading needs the monitor id and db project id.
@@ -71,14 +69,15 @@ try:
                     raise OSError(SysStatusError().number,
                                   SysStatusError().explanation)
                 power_reading = energy_sensor.active_power_A+energy_sensor.active_power_C
+                current_reading = energy_sensor.line_currentA+energy_sensor.line_currentC
                 # print('power A: {}, Power C: {}'.format(pA, pC))
                 # print('power: {}'.format(
                 #     energy_sensor.line_voltageA*energy_sensor.line_currentA))
 
                 #power_reading = energy_sensor.active_power
-                s.send(power_reading)
+                s.send(power_reading, current_reading)
                 blink(led_green, 1)
-                time.sleep(15)
+                time.sleep(1)
             except OSError as err:
                 if NoWiFiError().number == err.args[0]:
                     blink(led_red, NoWiFiError().blinks)

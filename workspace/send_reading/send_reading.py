@@ -24,8 +24,6 @@ import machine
 from app_error import NoWiFiError, NoMonitorNameError, NoDBidError
 from config import read_config
 
-CONFIG_FILE = 'lib/config.json'
-
 
 class SendReading:
     def __init__(self):
@@ -40,14 +38,14 @@ class SendReading:
         if self.project_id is None:
             raise OSError(NoDBidError().number, NoDBidError().explanation)
 
-    def send(self, power):
+    def send(self, power, current):
         # Assumes attached to wifi
         wlan_sta = network.WLAN(network.STA_IF)
         if not wlan_sta.isconnected:
             raise OSError(NoWiFiError().number,
                           NoWiFiError().explanation)
 
-        data = '{'+'"P":{}'.format(power) + '}'
+        data = '{'+'"P":{},"I":{}'.format(power, current) + '}'
         print(data)
         path = self._make_path()
         try:
@@ -66,10 +64,11 @@ class SendReading:
         timestamp_fb = r.json()['timestamp']
         # Convert the timestamp to micropython 2000-01-01 (embedded) Epoch
         # format and extract year, month....
-        ts = 1568821802745 // 1000
+        ts = timestamp_fb // 1000
         time_diff = 946684800
         year, month, day, hour, minute,  second, dayofweek, dayofyear = utime.localtime(
             ts-time_diff)
+        print('{} {} {}'.format(year, month, day))
         # Set micropython's date/time
         rtc = machine.RTC()
         rtc.datetime((year, month, day, dayofweek, hour, minute, second, 0))
@@ -81,5 +80,5 @@ class SendReading:
         now_unix = now + time_diff
         # String ize
         now_unix_str = str(now_unix)
-        return 'https://' + self.project_id+'.firebaseio.com/readings/' + \
-            self.monitor_name+'/'+now_unix_str+'/.json'
+        return 'https://' + self.project_id+'.firebaseio.com/' + \
+            self.monitor_name+'/readings/'+now_unix_str+'/.json'
