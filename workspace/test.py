@@ -1,38 +1,61 @@
 
 from atm90e32_u import ATM90e32
+from app_error import NoMonitor, SysStatusError, NoMonitorNameError, NoWiFiError, NoDBidError, blink
+import machine
 import time
 
 
-try:
-    # raise OSError(app_error.CALIBRATION_ERROR,
-    #               "Calibration failed.  Could not write to registers.")
-    # Get reading and then send reading.
-    # Initializing the atm90e32 could throw an AppError if the energy nonitor
-    # is not communicating with the microcontroller.
-    energy_sensor = ATM90e32(4485, 21, 42080, 25498, 0, 25498)
-    time.sleep(.5)
-    energy_sensor = ATM90e32(4485, 21, 42080, 25498,0, 25498)
-    time.sleep(1)
-    # Kick the atm into power readings....
-    vA = energy_sensor.line_voltageA
-    iA = energy_sensor.line_currentA
-    pA = vA*iA
-    print('voltage A: {} current A: {} power A: {}'.format(vA, iA, pA))
-    vC = energy_sensor.line_voltageC
-    iC = energy_sensor.line_currentC
-    pC = vC*iC
-    print('voltage C: {} current C: {} power C: {}'.format(vC, iC, pC))
-    print('total power: {}'.format(pA+pC))
-    # Now let's see what we get from the power registers.
-    # We are interested in Active Power since this is the kWh we get billed.
-    # First Total (All phase sum) Active Power
-    print("Total active power: {}".format(energy_sensor.total_active_power))
-    # Now for the two phases = A and C for us NA folks.
-    print("Power A: {} Power C: {} Power Total: {}".format(energy_sensor.active_power_A,
-                                                           energy_sensor.active_power_C, energy_sensor.active_power_A+energy_sensor.active_power_C))
+class MyTest:
+    def __init__(self):
+        self.led_red = machine.Pin(27, machine.Pin.OUT)
+        self.led_green = machine.Pin(32, machine.Pin.OUT)
+        # ***** atm90e32 CALIBRATION SETTINGS *****/
+        lineFreq = 4485  # 4485 for 60 Hz (North America)
+        # 389 for 50 hz (rest of the world)
+        PGAGain = 21     # 21 for 100A (2x), 42 for >100A (4x)
 
+        VoltageGain = 42080  # 42080 - 9v AC transformer.
+        # 32428 - 12v AC Transformer
 
-except OSError as e:
-    print(e)
-    print(e.args)
+        CurrentGainCT1 = 25498  # 38695 - SCT-016 120A/40mA
+        CurrentGainCT2 = 25498  # 25498 - SCT-013-000 100A/50mA
+        # 46539 - Magnalab 100A w/ built in burden resistor
+        # *******************************************/
+        try:
+            # Get reading and then send reading.
+            # Initializing the atm90e32 could throw an AppError if the energy monitor
+            # is not communicating with the microcontroller.
+            self.energy_sensor = ATM90e32(lineFreq, PGAGain,
+                                          VoltageGain, CurrentGainCT1, 0, CurrentGainCT2)
+            time.sleep(.5)
+            # Maybe we don't have to initialize a second time...I found working with a
+            # different atm90 that initializing twice was more robust than once.
+            self.energy_sensor = ATM90e32(lineFreq, PGAGain,
+                                          VoltageGain, CurrentGainCT1, 0, CurrentGainCT2)
 
+            # We have an instance of the atm90e32.  Let's check if we get sensible readings
+            sys0 = self.energy_sensor.sys_status0
+            if (sys0 == 0xFFFF or sys0 == 0):
+                raise OSError(SysStatusError().number,
+                              SysStatusError().explanation)
+        except OSError as e:
+            blink(self.led_red, 4)
+            print(e)
+            print(e.args)
+        else:
+            blink(self.led_green, 2)
+
+    def get_power(self):
+        vA = self.energy_sensor.line_voltageA
+        iA = self.energy_sensor.line_currentA
+        vC = self.energy_sensor.line_voltageC
+        iC = self.energy_sensor.line_currentC
+        pA = iA*vA
+        pC = iC*vC
+        print('vA: {} vC: {} iA: {} iC:{} pA {} pC {}'.format(
+            vA, vC, iA, iC, pA, pC))
+        power_reading = self.energy_sensor.active_power_A+self.energy_sensor.active_power_C
+        current_reading = self.energy_sensor.line_currentA+self.energy_sensor.line_currentC
+
+        print('Power reading to db: {} Current reading to db: {}'.format(
+            power_reading, current_reading))

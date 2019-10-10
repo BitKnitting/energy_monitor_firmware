@@ -46,6 +46,14 @@ class NoDBidError():
     blinks = 5
 
 
+class NoConfigFile():
+    # A config file containing the monitor name and Firebase project id
+    # must exist.
+    number = 306
+    explanation = "Config file does not exist."
+    blinks = 2
+
+
 def blink(led, nTimes):
     print('IN BLINK. blinking: {} times'.format(nTimes))
     secs_to_blink = 1
