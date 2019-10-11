@@ -9,6 +9,7 @@ import machine
 # ***** Set up debug LEDs
 # A red one for errors
 # A green one for ok.
+TIME_BETWEEN_READINGS = 2
 
 led_red = machine.Pin(27, machine.Pin.OUT)
 led_green = machine.Pin(32, machine.Pin.OUT)
@@ -17,11 +18,13 @@ lineFreq = 4485  # 4485 for 60 Hz (North America)
 # 389 for 50 hz (rest of the world)
 PGAGain = 21     # 21 for 100A (2x), 42 for >100A (4x)
 
-VoltageGain = 42080  # 42080 - 9v AC transformer.
+# VoltageGain = 42080  # 42080 - 9v AC transformer.
 # 32428 - 12v AC Transformer
-
-CurrentGainCT1 = 25498  # 38695 - SCT-016 120A/40mA
-CurrentGainCT2 = 25498  # 25498 - SCT-013-000 100A/50mA
+VoltageGain = 36650  # What I calculated based on reading app notes on calibration
+CurrentGainCT1 = 25368  # My calculation
+CurrentGainCT2 = 25368  # My calculation
+# CurrentGainCT1 = 25498  # 38695 - SCT-016 120A/40mA
+# CurrentGainCT2 = 25498  # 25498 - SCT-013-000 100A/50mA
 # 46539 - Magnalab 100A w/ built in burden resistor
 
 try:
@@ -78,7 +81,7 @@ else:
                     current_reading = energy_sensor.line_currentA+energy_sensor.line_currentC
                     s.send(power_reading, current_reading)
                     blink(led_green, 1)
-                    time.sleep(10)
+                    time.sleep(TIME_BETWEEN_READINGS)
                 except OSError as err:
                     if NoWiFiError().number == err.args[0]:
                         blink(led_red, NoWiFiError().blinks)

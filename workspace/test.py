@@ -10,15 +10,19 @@ class MyTest:
         self.led_red = machine.Pin(27, machine.Pin.OUT)
         self.led_green = machine.Pin(32, machine.Pin.OUT)
         # ***** atm90e32 CALIBRATION SETTINGS *****/
+
         lineFreq = 4485  # 4485 for 60 Hz (North America)
         # 389 for 50 hz (rest of the world)
         PGAGain = 21     # 21 for 100A (2x), 42 for >100A (4x)
 
-        VoltageGain = 42080  # 42080 - 9v AC transformer.
+        # VoltageGain = 42080  # 42080 - 9v AC transformer.
+        VoltageGain = 36650  # What I calculated based on reading app notes on calibration
         # 32428 - 12v AC Transformer
 
-        CurrentGainCT1 = 25498  # 38695 - SCT-016 120A/40mA
-        CurrentGainCT2 = 25498  # 25498 - SCT-013-000 100A/50mA
+        CurrentGainCT1 = 25368  # My calculation
+        CurrentGainCT2 = 25368  # My calculation
+        # CurrentGainCT1 = 25498  # 38695 - SCT-016 120A/40mA
+        # CurrentGainCT2 = 25498  # 25498 - SCT-013-000 100A/50mA
         # 46539 - Magnalab 100A w/ built in burden resistor
         # *******************************************/
         try:

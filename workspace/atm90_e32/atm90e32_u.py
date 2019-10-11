@@ -238,6 +238,20 @@ class ATM90e32:
     def active_power_C(self):
         reading = self._read32Register(PmeanC, PmeanCLSB)
         return reading * 0.00032
+    ######################################################
+    # Support reading a register
+    ######################################################
+
+    def read(self, address):
+        reading = self._spi_rw(SPI_READ, address, 0xFFFF)
+        return reading
+
+    ######################################################
+    # Support writing to a register
+    ######################################################
+    def write(self, address, val):
+        print('in write')
+        return self._spi_rw(SPI_WRITE, address, val)
     #####################################################################################
     # do the SPI read or write request.
     #####################################################################################
