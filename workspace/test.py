@@ -16,7 +16,7 @@ class MyTest:
         PGAGain = 21     # 21 for 100A (2x), 42 for >100A (4x)
 
         # VoltageGain = 42080  # 42080 - 9v AC transformer.
-        VoltageGain = 36650  # What I calculated based on reading app notes on calibration
+        VoltageGain = 37898  # What I calculated based on reading app notes on calibration
         # 32428 - 12v AC Transformer
 
         CurrentGainCT1 = 25368  # My calculation
