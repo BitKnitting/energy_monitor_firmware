@@ -4,6 +4,10 @@ import math
 import time
 import struct
 from atm90e32_registers import *
+# 
+#  Copyright 2019, Margaret Johnson
+#
+# Update 11/24/2019 - added reactive power readings.
 
 
 SPI_WRITE = 0
@@ -237,6 +241,24 @@ class ATM90e32:
     @property
     def active_power_C(self):
         reading = self._read32Register(PmeanC, PmeanCLSB)
+        return reading * 0.00032
+        #####################################################################################
+
+    @property
+    def total_reactive_power(self):
+        reading = self._read32Register(QmeanT, PmeanTLSB)
+        return reading * 0.00032
+    #####################################################################################
+
+    @property
+    def reactive_power_A(self):
+        reading = self._read32Register(QmeanA, PmeanALSB)
+        return reading * 0.00032
+        #####################################################################################
+
+    @property
+    def reactive_power_C(self):
+        reading = self._read32Register(QmeanC, PmeanCLSB)
         return reading * 0.00032
     ######################################################
     # Support reading a register

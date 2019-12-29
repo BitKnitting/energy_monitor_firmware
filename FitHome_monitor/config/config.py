@@ -1,6 +1,9 @@
 import ujson as json
 from app_error import NoConfigFile
-
+#
+# The config files are found in the lib subdir.  main passes in
+# the config filename for the monitor that will be started up with
+# main's execution.
 CONFIG_FILE = 'lib/config.json'
 
 

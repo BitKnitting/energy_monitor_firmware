@@ -9,11 +9,15 @@ import machine
 # ***** Set up debug LEDs
 # A red one for errors
 # A green one for ok.
-TIME_BETWEEN_READINGS = 2
-
 led_red = machine.Pin(27, machine.Pin.OUT)
 led_green = machine.Pin(32, machine.Pin.OUT)
+# I'm not delaying readings because there is a pause in the atm90e32
+# TIME_BETWEEN_READINGS = 1
+
+
 # ***** atm90e32 CALIBRATION SETTINGS *****/
+# Based on the CT and power transformer being used.
+# See http://bit.ly/2ED1MSD
 lineFreq = 4485  # 4485 for 60 Hz (North America)
 # 389 for 50 hz (rest of the world)
 PGAGain = 21     # 21 for 100A (2x), 42 for >100A (4x)
@@ -26,6 +30,12 @@ CurrentGainCT2 = 25368  # My calculation
 # CurrentGainCT1 = 25498  # 38695 - SCT-016 120A/40mA
 # CurrentGainCT2 = 25498  # 25498 - SCT-013-000 100A/50mA
 # 46539 - Magnalab 100A w/ built in burden resistor
+# ****** Input Variables ******/
+# The one input variable we need to know is the name of the config file to use.
+# The config file identifies the monitor and contains connection info to the
+#  Rasp Pi
+# config_filenamne = input('enter the config filename: ')
+# config_filename = "config_aggregate.json"
 
 try:
     exists_config()
@@ -35,7 +45,7 @@ else:
     # *******************************************/
     # Get the wifi up and running...
     # First blink the green LED so we know we're in main.py
-    blink(led_green, 4)
+    blink(led_green, 2)
     # Load up an instance of wifi.
     join_wifi = WifiAccess()
     if (not join_wifi.get_connected()):
@@ -44,7 +54,10 @@ else:
 
     # *******************************************/
     # Delay starting up to accomodate plugging in energy monitor after microcontroller.
-    time.sleep(10)
+    # TBD: Some kind of "bug" that I have to make sure to plug the energy monitor in
+    # AFTER the esp32. It shouldn't matter...there's something going on with the SPI
+    # traffic.
+    time.sleep(2)
 
     try:
         # Get reading and then send reading.
@@ -77,11 +90,11 @@ else:
                     if (sys0 == 0xFFFF or sys0 == 0):
                         raise OSError(SysStatusError().number,
                                       SysStatusError().explanation)
-                    power_reading = energy_sensor.active_power_A+energy_sensor.active_power_C
-                    current_reading = energy_sensor.line_currentA+energy_sensor.line_currentC
-                    s.send(power_reading, current_reading)
+                    Pa = energy_sensor.total_active_power
+                    Pr = energy_sensor.total_reactive_power
+                    s.send(Pa, Pr)
                     blink(led_green, 1)
-                    time.sleep(TIME_BETWEEN_READINGS)
+                    # time.sleep(TIME_BETWEEN_READINGS)
                 except OSError as err:
                     if NoWiFiError().number == err.args[0]:
                         blink(led_red, NoWiFiError().blinks)
